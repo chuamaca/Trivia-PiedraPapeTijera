@@ -1,5 +1,3 @@
-#Aqui mostramos en la pantalla el texto de bienvenida
-print("Hola! Bienvenido a mi trivia")
 
 # las importaciones al principio
 import time
@@ -24,6 +22,10 @@ class color:
 class config:
     PREMIO = "Una entrada al CINE"
     MAX_INTENTOS = 2
+    INTENTOGANADOR = 1
+    SCRM=0
+    SCRU=0
+    JUEGO_NUM=0
 
 
 # mis funciones
@@ -63,8 +65,10 @@ def muestraElMenu():
     muestraMisLineas()
     print("a: Mostrar ayuda")
     print("c: Configurar premio")
+    print("i: Configurar # Intento Ganador")
     print("j: Jugar ahora")
     print("s: Salir del juego")
+  
     return input("Ingresa una opción:")
 
 
@@ -73,11 +77,8 @@ def configuraElPremio():
     print(
         "Tu premio esta configurado a: (" + config.PREMIO +
         "). Para cambiar selecciona un nuevo premio", color.AMARILLO)
-    premios = {
-        "c": "Un cafecito",
-        "p": "Una pizza",
-        "m": "Una entrada al cine"
-    }
+    premios = { "c": "Un cafecito", "p": "Una pizza", "m": "Una entrada al cine" }
+
     print("c: Un cafecito")
     print("p: Una pizza")
     print("m: Una entrada al cine", color.FIN)
@@ -95,12 +96,59 @@ def configuraElPremio():
     desarrollaElJuego()
 
 
-def mostrarGanaste():
-    print(color.NEGRITA, "Ganaste!")
-    print(color.VERDE, "Te debo ", config.PREMIO, color.FIN, "\n")
+def configIntentoGanador():
+    print("\n", color.AMARILLO)
+    print(
+        "Numero Intentos Por Defecto es a: (" + str(config.INTENTOGANADOR) +
+        "). Para cambiar selecciona un nuevo Numero Intento Ganador", color.AMARILLO)
+
+    intentoGan = { "1":1, "2":2, "3":3 }
+    print("1: Un Intento")
+    print("2: Dos Intentos")
+    print("3: Tres Intentos", color.FIN)
+
+    opIntentoGanador = input("Ingresa una opcion:")
+    opsI = ["1","2","3"]
+    l=0
+
+    while (opIntentoGanador not in opsI and l <= config.MAX_INTENTOS):
+        l = l + 1
+        opIntentoGanador = input("Opcion incorrecta, Ingresa 1, 2 o 3:")
+    if opIntentoGanador not in opsI:
+        salirDelJuego()
+
+    config.INTENTOGANADOR = intentoGan[opIntentoGanador]
+    print(color.VERDE, "Correctamente cambiado", color.FIN, "\n")
+    GooGame()
+
+def mostrarScore(SM,SU):
+    config.SCRM=config.SCRM+SM
+    config.SCRU=config.SCRU+SU
+
+    if config.JUEGO_NUM <= config.INTENTOGANADOR :
+        if config.SCRM > config.SCRU : print("Perdiste !", "\n")
+        if config.SCRU > config.SCRM : print("Ganaste !", "\n")
+        if config.SCRU == config.SCRM : print("Empate !", "\n")
+
+    if config.JUEGO_NUM == config.INTENTOGANADOR:
+        if config.SCRM > config.SCRU :
+            print(color.AZUL, "Partida Final: Sigue Intentando!, Perdiste. "+ str(config.SCRM) + " a " + str(config.SCRU), "\n")
+            desarrollaElJuego()
+        if config.SCRU > config.SCRM :
+            print(color.AZUL, "Partida Final: Ganaste!, "+ str(config.SCRU) + " a " + str(config.SCRM), ",Te debo ", config.PREMIO, "\n")
+            desarrollaElJuego()
+        if config.SCRU == config.SCRM :
+            print(color.AZUL, "Partida Final: Sigue Intentando!, Empate. "+ str(config.SCRM) + " a " + str(config.SCRU), "\n")        
+            desarrollaElJuego()
+
+def GooGame():
+    for x in range(config.INTENTOGANADOR):
+        jugarAhora()
 
 
 def jugarAhora():
+    config.JUEGO_NUM=config.JUEGO_NUM + 1
+    print("Juego #: " + str(config.JUEGO_NUM))
     opciones = ["piedra", "papel", "tijera"]
     # le muestro las opciones al user
     print(color.AZUL, "Inicia el juego! Elije una opcion:")
@@ -111,40 +159,38 @@ def jugarAhora():
     if opcionUsuario in ["1", "2", "3"]:
         opcionM = random.randint(1, 3)
         opcionU = int(opcionUsuario)
+        SCOREM=0
+        SCOREU=0
         print("--------")
-        print("Elijiste: ", opciones[opcionU - 1], color.VERDE)
+        print("Elijiste         : ", opciones[opcionU - 1], color.VERDE)
         print("La máquina eligió: ", opciones[opcionM - 1], color.FIN)
         if opcionM == 1:
-            if opcionU == 1:
-                print("Empate!")
-            elif opcionU == 2:
-                mostrarGanaste()
-            else:
-                print("Perdiste")
-        elif opcionM == 2:
-            if opcionU == 1:
-                print("Perdiste")
-            elif opcionU == 2:
-                print("Empate!")
-            else:
-                mostrarGanaste()
-        else:
-            if opcionU == 1:
-                mostrarGanaste()
-            elif opcionU == 2:
-                print("Perdiste")
-            else:
-                print("Empate!")
-    else:
-        print(color.ROJO, "perdiste", color.FIN)
+            if opcionU == 1: mostrarScore(0,0)
+            elif opcionU == 2: mostrarScore(0,1)
+            else: mostrarScore(1,0)
 
-    desarrollaElJuego()
+        elif opcionM == 2:
+            if opcionU == 1: mostrarScore(1,0)
+            elif opcionU == 2: mostrarScore(0,0)
+            else: mostrarScore(0,1)
+
+        else:
+            if opcionU == 1: mostrarScore(0,1)
+            elif opcionU == 2: mostrarScore(1,0)
+            else: mostrarScore(0,0)
+    else:
+        print(color.ROJO, "Ingresar De Nuevo !", color.FIN)
+        desarrollaElJuego()
 
 
 def desarrollaElJuego():
+    
+    config.JUEGO_NUM=0
+    config.SCRM=0
+    config.SCRU=0
     # MENU DEL JUEGO
     OP_PRINCIPAL = muestraElMenu()
-    ops = ["a", "c", "j", "s"]
+    ops = ["a", "c","i","j", "s"]
     # VALIDAMOS
     chance_op = 0
     while (OP_PRINCIPAL not in ops and chance_op <= config.MAX_INTENTOS):
@@ -154,14 +200,11 @@ def desarrollaElJuego():
     if OP_PRINCIPAL not in ops:
         salirDelJuego()
 
-    if OP_PRINCIPAL == "a":
-        muestraLaAyuda()
-    elif OP_PRINCIPAL == "c":
-        configuraElPremio()
-    elif OP_PRINCIPAL == "j":
-        jugarAhora()
-    else:
-        salirDelJuego()
+    if OP_PRINCIPAL == "a": muestraLaAyuda()
+    elif OP_PRINCIPAL == "c": configuraElPremio()
+    elif OP_PRINCIPAL == "i": configIntentoGanador()
+    elif OP_PRINCIPAL == "j": GooGame()
+    else: salirDelJuego()
 
 
 # INICIO DEL PROGRAMA
